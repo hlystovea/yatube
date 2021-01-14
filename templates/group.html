@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Записи сообщества {{ group.title }}{% endblock %}
+{% block content %}
+{% load thumbnail %}
+
+    <main role="main" class="container">
+        <div class="row">
+                <div class="col-md-3 mb-3 mt-1">
+                        <div class="card">
+                                <div class="card-body">
+                                        <div class="h2">
+                                            <!-- Название сообщества -->
+                                            {{ group.title }}
+                                        </div>
+                                        <div class="h5 text-muted">
+                                             <!-- Описание сообщества -->
+                                             {{ group.description|linebreaks }}
+                                        </div>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                        <li class="list-group-item">
+                                                <div class="h6 text-muted">
+                                                Подписчиков: XXX
+                                                </div>
+                                        </li>
+                                        <li class="list-group-item">
+                                                <div class="h6 text-muted">
+                                                    <!-- Количество записей -->
+                                                    Записей: {{ paginator.count }}
+                                                </div>
+                                        </li>
+                                </ul>
+                        </div>
+                </div>
+    
+                <div class="col-md-9">                
+                    {% if paginator.count == 0 %}
+                        <div class="card mb-3 mt-1 shadow-sm">
+                                <div class="card-body">
+                                        <p class="card-text">
+                                                <!-- Текст поста -->
+                                                <p>В сообществе нет ни одной записи.</p> 
+                                        </p>
+                                </div>
+                        </div>
+                    {% else %}
+                    <!-- Начало блока с постами -->
+                    {% for post in page %}
+                        {% include "includes/post_item.html" with post=post %} 
+                    {% endfor %}
+                    {% endif %}
+    
+                    <!-- Здесь постраничная навигация паджинатора -->
+                    {% include "includes/paginator.html" %}
+         </div>
+        </div>
+    </main>
+
+{% endblock %}

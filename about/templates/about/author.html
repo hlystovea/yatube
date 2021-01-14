@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+{% load user_filters %}
+  <main role="main" class="container">
+      <div class="row">
+          <!-- Левый вспомогательный блок -->
+          <div class="col-md-3 mb-3 mt-1">
+              <div class="card">
+                  <div class="card-body">
+                      <ul class="list-group list-group-flush">
+                          <li class="list-group-item">
+                              <img  class="img-thumbnail" src = "/media/about/avatar.jpg"alt = "Автор" title = "Автор">
+                              <div class="h3">
+                                  Об авторе
+                              </div> 
+                          </li>
+                          <li class="list-group-item">
+                              <div class="h6 text-muted">
+                                  Коротко обо мне
+                              </div>
+                          </li>
+                      </ul>                                               
+                  </div>                    
+              </div>                
+          </div>
+          <!-- Тело страницы -->
+          <div class="col-md-9">
+            <div class="card mb-3 mt-1 shadow-sm">
+              <div class="card-body">                    
+                  <div class="card-text">
+                      <p>Привет!</p>
+                      <p>Меня зовут Евгений! Я инженер-гидроэнергетик, который решил начать изучение языка Python.</p>
+                        <img class="img-responsive" src = "/media/about/about_author.jpg" alt = "Собакен" title = "Собакен">
+                      <p>Моя собака поздравляет Вас с Новым годом и Рождеством!</p>
+                  </div>                    
+              </div>
+            </div>               
+          </div>            
+      </div>        
+  </main>
+{% endblock %}

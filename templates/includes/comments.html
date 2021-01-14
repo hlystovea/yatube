@@ -1,0 +1,58 @@
+<!-- Форма добавления комментария -->
+{% load user_filters %}
+
+{% if form and not comment%}
+<div class="card my-4">
+    <form method="post">
+        {% csrf_token %}
+        <h5 class="card-header">Добавить комментарий:</h5>
+        <div class="card-body">
+            <div class="form-group">
+                <textarea name="text" cols=100% rows="4" maxlength="300" class="form-control" required="" autofocus="" id="id_text" placeholder="Введите текст комментария"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Отправить</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<!-- Комментарии -->
+{% for item in page %}
+<div class="card mb-3 mt-1 shadow-sm">
+    <div class="card-body">
+        <p class="card-text">
+            <a href="{% url 'posts:profile' item.author.username %}" name="comment_{{ item.id }}">
+               <strong class="d-block text-gray-dark">{{ item.author.get_full_name }}</strong>
+            </a>
+            {% if item.id == comment.id %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <textarea name="text" cols=100% rows="4" maxlength="300" class="form-control" required="" autofocus="" id="id_text">{{ form.text.value }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </form>
+            {% else %}
+            <p>{{ item.text | linebreaksbr }}</p>
+        </p>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group">
+              <!-- Ссылка на редактирование, показывается только автору комментария-->
+              {% if user == item.author %}
+                <a class="btn btn-sm text-muted" href="{% url 'posts:edit_comment' item.post.author.username item.post.id item.id %}" role="button">
+                  Редактировать
+                </a>
+              {% endif %}
+            </div>
+
+            <!-- Дата публикации коммента -->
+            <small class="text-muted">{{ item.created }}</small>
+        </div>
+            {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+{% if page.has_other_pages %}
+    {% include "includes/paginator.html" with items=page paginator=paginator%}
+{% endif %}
