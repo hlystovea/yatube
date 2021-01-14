@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
 
 from posts.forms import CommentForm, PostForm
-from posts.models import Comment, Group, Post
+from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
@@ -49,10 +49,16 @@ def profile(request, username):
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
 
+    is_follow = Follow.objects.filter(
+        user__username=request.user,
+        author=author,
+    ).exists()
+
     context = {
         'author': author,
         'page': page,
         'paginator': paginator,
+        'is_follow': is_follow,
     }
     return render(request, 'posts/profile.html', context)
 
@@ -64,11 +70,18 @@ def post_view(request, username, post_id):
     paginator = Paginator(comments, 3)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
+
+    is_follow = Follow.objects.filter(
+        user__username=request.user,
+        author__username=username,
+    ).exists()
+
     context = {
         'post': post,
         'author': post.author,
         'page': page,
         'paginator': paginator,
+        'is_follow': is_follow,
     }
     return render(request, 'posts/post.html', context)
 
@@ -123,11 +136,16 @@ def add_comment(request, username, post_id):
         form.instance.post = post
         form.save()
         return redirect('posts:post', username=username, post_id=post_id)
+    is_follow = Follow.objects.filter(
+        user__username=request.user,
+        author__username=username,
+    ).exists()
     context = {
         'form': form,
         'post': post,
         'page': page,
         'paginator': paginator,
+        'is_follow': is_follow,
     }
     return render(request, 'posts/post.html', context)
 
@@ -150,36 +168,74 @@ def edit_comment(request, username, post_id, comment_id):
         if form.is_valid():
             form.save()
             return redirect('posts:post', username=username, post_id=post_id)
+        is_follow = Follow.objects.filter(
+            user__username=request.user,
+            author__username=username,
+        ).exists()
         context = {
             'form': form,
             'post': post,
             'comment': comment,
             'page': page,
             'paginator': paginator,
+            'is_follow': is_follow,
         }
         return render(request, 'posts/post.html', context)
     return redirect('posts:post', username=username, post_id=post_id)
 
 
 @login_required
+def del_comment(request, username, post_id, comment_id):
+    if request.user.username == username:
+        comment = get_object_or_404(
+            Comment,
+            author__username=username,
+            post__id=post_id,
+            id=comment_id
+        )
+        comment.delete()
+    return redirect('posts:post', username=username, post_id=post_id)
+
+
+@login_required
 def follow_index(request):
-    post_list = Post.objects.prefetch_related()
+    users = User.objects.filter(
+        id__in=Follow.objects.values('author').filter(user=request.user))
+    post_list = Post.objects.filter(author__in=users).all()
+
+    paginator = Paginator(post_list, 10)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+
     context = {
-        "page": page
+        'page': page,
+        'paginator': paginator,
     }
-    return render(request, "follow.html", context)
+    return render(request, "posts/follow.html", context)
 
 
 @login_required
 def profile_follow(request, username):
-    # ...
-    pass
+    author = get_object_or_404(User, username=username)
+    if not author == request.user:
+        follow = Follow.objects.filter(user=request.user, author=author)
+        if not follow.exists():
+            Follow.objects.create(user=request.user, author=author)
+    return redirect(
+        request.META.get('HTTP_REFERER', 'posts:profile'),
+        username=username
+    )
 
 
 @login_required
 def profile_unfollow(request, username):
-    # ...
-    pass 
+    author = get_object_or_404(User, username=username)
+    follow = Follow.objects.filter(user=request.user, author=author)
+    follow.delete()
+    return redirect(
+        request.META.get('HTTP_REFERER', 'posts:profile'),
+        username=username
+    )
 
 
 def page_not_found(request, exception):

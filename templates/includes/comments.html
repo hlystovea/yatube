@@ -39,6 +39,9 @@
             <div class="btn-group">
               <!-- Ссылка на редактирование, показывается только автору комментария-->
               {% if user == item.author %}
+                <a class="btn btn-sm text-muted" href="{% url 'posts:del_comment' item.post.author.username item.post.id item.id %}" role="button">
+                  Удалить
+                </a>
                 <a class="btn btn-sm text-muted" href="{% url 'posts:edit_comment' item.post.author.username item.post.id item.id %}" role="button">
                   Редактировать
                 </a>

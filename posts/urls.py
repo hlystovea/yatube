@@ -22,4 +22,9 @@ urlpatterns = [
         views.edit_comment,
         name='edit_comment'
     ),
+    path(
+        '<str:username>/<int:post_id>/comment/<int:comment_id>/del',
+        views.del_comment,
+        name='del_comment'
+    ),
 ]
