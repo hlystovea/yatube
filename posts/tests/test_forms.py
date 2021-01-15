@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, Post
+from posts.models import Comment, Group, Post
 
 User = get_user_model()
 
@@ -94,3 +94,63 @@ class PostFormTests(TestCase):
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.group.id, form_data['group'])
+
+
+class CommentFormTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.author = User.objects.create(username='TestAuthor')
+        cls.user = User.objects.create(username='TestUser')
+
+        cls.post = Post.objects.create(text='Текст', author=cls.author)
+        cls.comment = Comment.objects.create(
+            text='Текст',
+            author=cls.user,
+            post=cls.post,
+        )
+
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(cls.user)
+
+        cls.pst_args = {
+            'username': cls.author.username,
+            'post_id': cls.post.id
+        }
+        cls.comm_args = {
+            'username': cls.author.username,
+            'post_id': cls.post.id,
+            'comment_id': cls.comment.id,
+        }
+
+    def test_create_comment(self):
+        """Валидная форма создает запись в Comment."""
+        comments_count = Comment.objects.count()
+
+        data = {'text': 'Комментарий'}
+
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs=self.pst_args),
+            data=data,
+            follow=True,
+        )
+        self.assertRedirects(
+            response, reverse('posts:post', kwargs=self.pst_args))
+        self.assertEqual(Comment.objects.count(), comments_count + 1)
+        self.assertTrue(Comment.objects.filter(text=data['text']).exists())
+
+    def test_edit_comment(self):
+        """Валидная форма редактирует запись в Comment."""
+        comments_count = Comment.objects.count()
+
+        data = {'text': 'Изменённый текст'}
+
+        response = self.authorized_client.post(
+            reverse('posts:edit_comment', kwargs=self.comm_args),
+            data=data,
+        )
+        post = Comment.objects.get(id=self.comment.id)
+        self.assertRedirects(
+            response, reverse('posts:post', kwargs=self.pst_args))
+        self.assertEqual(Comment.objects.count(), comments_count)
+        self.assertEqual(post.text, data['text'])

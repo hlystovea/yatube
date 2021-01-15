@@ -65,7 +65,6 @@ class Comment(models.Model):
     )
     text = models.TextField(
         verbose_name='Комментарий',
-        help_text='Напишите что-нибудь.',
         max_length=300,
     )
     created = models.DateTimeField(

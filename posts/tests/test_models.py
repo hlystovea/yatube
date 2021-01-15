@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from posts.models import Group, Post
+from posts.models import Comment, Group, Post
 
 User = get_user_model()
 
@@ -64,3 +64,30 @@ class GroupModelTest(TestCase):
     def test_object_name_is_title_field(self):
         """__str__.group - это строчка с содержимым group.title."""
         self.assertEquals(self.group.title, str(self.group))
+
+
+class CommentModelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user = User.objects.create(username='TestUser')
+
+        cls.post = Post.objects.create(text='Текст', author=cls.user)
+        cls.comment = Comment.objects.create(
+            text='Текст',
+            author=cls.user,
+            post=cls.post
+        )
+
+    def test_verbose_name(self):
+        """verbose_name в полях совпадает с ожидаемым."""
+        field_verboses = {
+            'post': 'Пост',
+            'text': 'Комментарий',
+            'created': 'Дата публикации',
+            'author': 'Автор',
+        }
+        for value, expected in field_verboses.items():
+            with self.subTest(value=value):
+                self.assertEqual(
+                    self.comment._meta.get_field(value).verbose_name, expected)

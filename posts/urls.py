@@ -16,14 +16,14 @@ urlpatterns = [
     path('<str:username>/', views.profile, name='profile'),
     path('<str:username>/<int:post_id>/', views.post_view, name='post'),
     path('<str:username>/<int:post_id>/edit/', views.post_edit, name='post_edit'), # noqa
-    path('<str:username>/<int:post_id>/comment', views.add_comment, name='add_comment'), # noqa
+    path('<str:username>/<int:post_id>/comment/', views.add_comment, name='add_comment'), # noqa
     path(
-        '<str:username>/<int:post_id>/comment/<int:comment_id>',
+        '<str:username>/<int:post_id>/comment/<int:comment_id>/edit/',
         views.edit_comment,
         name='edit_comment'
     ),
     path(
-        '<str:username>/<int:post_id>/comment/<int:comment_id>/del',
+        '<str:username>/<int:post_id>/comment/<int:comment_id>/del/',
         views.del_comment,
         name='del_comment'
     ),

@@ -67,9 +67,7 @@ def post_view(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     comments = post.comments.all()
 
-    paginator = Paginator(comments, 3)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
+    form = CommentForm()
 
     is_follow = Follow.objects.filter(
         user__username=request.user,
@@ -77,10 +75,10 @@ def post_view(request, username, post_id):
     ).exists()
 
     context = {
+        'form': form,
         'post': post,
         'author': post.author,
-        'page': page,
-        'paginator': paginator,
+        'comments': comments,
         'is_follow': is_follow,
     }
     return render(request, 'posts/post.html', context)
@@ -126,25 +124,22 @@ def add_comment(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     comments = post.comments.all()
 
-    paginator = Paginator(comments, 3)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
-
     form = CommentForm(request.POST or None)
     if form.is_valid():
         form.instance.author = request.user
         form.instance.post = post
         form.save()
         return redirect('posts:post', username=username, post_id=post_id)
+
     is_follow = Follow.objects.filter(
         user__username=request.user,
         author__username=username,
     ).exists()
+
     context = {
         'form': form,
         'post': post,
-        'page': page,
-        'paginator': paginator,
+        'comments': comments,
         'is_follow': is_follow,
     }
     return render(request, 'posts/post.html', context)
@@ -153,12 +148,8 @@ def add_comment(request, username, post_id):
 @login_required
 def edit_comment(request, username, post_id, comment_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
-    comments = Comment.objects.filter(post=post)
-    comment = get_object_or_404(comments, id=comment_id)
-
-    paginator = Paginator(comments, 3)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
+    comment = get_object_or_404(Comment, post=post, id=comment_id)
+    comments = post.comments.all()
 
     if comment.author == request.user:
         form = CommentForm(
@@ -176,8 +167,7 @@ def edit_comment(request, username, post_id, comment_id):
             'form': form,
             'post': post,
             'comment': comment,
-            'page': page,
-            'paginator': paginator,
+            'comments': comments,
             'is_follow': is_follow,
         }
         return render(request, 'posts/post.html', context)

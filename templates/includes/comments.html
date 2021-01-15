@@ -1,14 +1,14 @@
 <!-- Форма добавления комментария -->
 {% load user_filters %}
 
-{% if form and not comment%}
+{% if user.is_authenticated %}
 <div class="card my-4">
     <form method="post">
         {% csrf_token %}
         <h5 class="card-header">Добавить комментарий:</h5>
         <div class="card-body">
             <div class="form-group">
-                <textarea name="text" cols=100% rows="4" maxlength="300" class="form-control" required="" autofocus="" id="id_text" placeholder="Введите текст комментария"></textarea>
+                <textarea name="text" cols=100% rows="4" maxlength="300" class="form-control" required="" id="id_text" placeholder="Введите текст комментария"></textarea>
             </div>
             <button type="submit" class="btn btn-primary">Отправить</button>
         </div>
@@ -17,7 +17,7 @@
 {% endif %}
 
 <!-- Комментарии -->
-{% for item in page %}
+{% for item in comments %}
 <div class="card mb-3 mt-1 shadow-sm">
     <div class="card-body">
         <p class="card-text">
@@ -55,7 +55,3 @@
     </div>
 </div>
 {% endfor %}
-
-{% if page.has_other_pages %}
-    {% include "includes/paginator.html" with items=page paginator=paginator%}
-{% endif %}

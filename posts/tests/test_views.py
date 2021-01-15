@@ -14,7 +14,7 @@ from posts.models import Group, Post
 User = get_user_model()
 
 
-class PostPagesTests(TestCase):
+class PostsPagesTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -77,6 +77,9 @@ class PostPagesTests(TestCase):
             'posts:group': ('group.html', self.group_args),
             'posts:profile': ('posts/profile.html', self.profile_args),
             'posts:post': ('posts/post.html', self.post_args),
+            'posts:follow_index': ('posts/follow.html', None),
+            'posts:profile_follow': ('posts/profile.html', self.profile_args),
+            'posts:profile_unfollow': ('posts/profile.html', self.profile_args),
         }
         for url_name, value in urls.items():
             with self.subTest(value=url_name):

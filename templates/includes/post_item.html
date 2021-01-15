@@ -33,7 +33,7 @@
           <a class="btn btn-sm text-muted" href="{% url 'posts:add_comment' post.author.username post.id %}" role="button">
             Добавить комментарий
           </a>
-  
+
           <!-- Ссылка на редактирование поста для автора -->
           {% if user == post.author %}
           <a class="btn btn-sm text-muted" href="{% url 'posts:post_edit' post.author.username post.id %}" role="button">
