@@ -2,21 +2,23 @@
 {% block title %} Последние обновления {% endblock %}
 {% load cache %}
 
-{% cache 20 index_page request.user.username %}
 {% block content %}
-    <div class="container">
 
-        {% include "includes/menu.html"%}
-
-           <h1> Последние обновления на сайте</h1>
-                {% for post in page %}
+        <div class="container">
+            {% include "includes/menu.html"%}
+            <h1>
+                Последние обновления на сайте
+            </h1>
+            <!-- actual timestamp {% now "H:i:s" %} --> 
+            {% for post in page %}
+                {% cache 20 post_item post.id request.user.username %}
+                <!-- cache timestamp {% now "H:i:s" %} --> 
                     {% include "includes/post_item.html" with post=post %}
-                {% endfor %}
-    </div>
-
+                {% endcache %}
+            {% endfor %}
+        </div>
         {% if page.has_other_pages %}
             {% include "includes/paginator.html" with items=page paginator=paginator%}
         {% endif %}
 
 {% endblock %}
-{% endcache %}

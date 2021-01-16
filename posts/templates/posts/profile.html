@@ -8,25 +8,25 @@
 
         {% include "includes/sidebar.html" with username=author %} 
 
-            <div class="col-md-9">                
-                {% if paginator.count == 0 %}
-                    <div class="card mb-3 mt-1 shadow-sm">
-                            <div class="card-body">
-                                    <p class="card-text">
-                                            <p>У автора нет ни одной записи.</p> 
-                                    </p>
-                            </div>
+        <div class="col-md-9">                
+            {% if paginator.count == 0 %}
+                <div class="card mb-3 mt-1 shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">
+                            <p>У автора нет ни одной записи.</p> 
+                        </p>
                     </div>
-                {% else %}
-                <!-- Начало блока с постами -->
-                {% for post in page %}
-                    {% include "includes/post_item.html" with post=post %} 
-                {% endfor %}
-                {% endif %}
+                </div>
+            {% else %}
+            <!-- Начало блока с постами -->
+            {% for post in page %}
+                {% include "includes/post_item.html" with post=post %} 
+            {% endfor %}
+            {% endif %}
 
-                <!-- Здесь постраничная навигация паджинатора -->
-                {% include "includes/paginator.html" %}
-     </div>
+            <!-- Здесь постраничная навигация паджинатора -->
+            {% include "includes/paginator.html" %}
+        </div>
     </div>
 </main>
 

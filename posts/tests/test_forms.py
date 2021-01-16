@@ -38,9 +38,9 @@ class PostFormTests(TestCase):
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.author)
 
-        cls.pst_args = {
+        cls.post_args = {
             'username': cls.author.username,
-            'post_id': cls.post.id
+            'post_id': cls.post.id,
         }
 
     @classmethod
@@ -48,7 +48,7 @@ class PostFormTests(TestCase):
         super().tearDownClass()
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
 
-    def test_create_post(self):
+    def test_create_post_form(self):
         """Валидная форма создает запись в Post."""
         posts_count = Post.objects.count()
         small_gif = (
@@ -77,7 +77,7 @@ class PostFormTests(TestCase):
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(Post.objects.filter(text=form_data['text']).exists())
 
-    def test_edit_post(self):
+    def test_post_edit_form(self):
         """Валидная форма редактирует запись в Post."""
         posts_count = Post.objects.count()
         form_data = {
@@ -85,12 +85,12 @@ class PostFormTests(TestCase):
             'group': self.group_2.id,
         }
         response = self.authorized_client.post(
-            reverse('posts:post_edit', kwargs=self.pst_args),
+            reverse('posts:post_edit', kwargs=self.post_args),
             data=form_data,
         )
         post = Post.objects.get(id=self.post.id)
         self.assertRedirects(
-            response, reverse('posts:post', kwargs=self.pst_args))
+            response, reverse('posts:post', kwargs=self.post_args))
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.group.id, form_data['group'])
@@ -113,9 +113,9 @@ class CommentFormTests(TestCase):
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
 
-        cls.pst_args = {
+        cls.post_args = {
             'username': cls.author.username,
-            'post_id': cls.post.id
+            'post_id': cls.post.id,
         }
         cls.comm_args = {
             'username': cls.author.username,
@@ -123,34 +123,34 @@ class CommentFormTests(TestCase):
             'comment_id': cls.comment.id,
         }
 
-    def test_create_comment(self):
+    def test_create_comment_form(self):
         """Валидная форма создает запись в Comment."""
         comments_count = Comment.objects.count()
 
         data = {'text': 'Комментарий'}
 
         response = self.authorized_client.post(
-            reverse('posts:add_comment', kwargs=self.pst_args),
+            reverse('posts:add_comment', kwargs=self.post_args),
             data=data,
             follow=True,
         )
         self.assertRedirects(
-            response, reverse('posts:post', kwargs=self.pst_args))
+            response, reverse('posts:post', kwargs=self.post_args))
         self.assertEqual(Comment.objects.count(), comments_count + 1)
         self.assertTrue(Comment.objects.filter(text=data['text']).exists())
 
-    def test_edit_comment(self):
+    def test_edit_comment_form(self):
         """Валидная форма редактирует запись в Comment."""
         comments_count = Comment.objects.count()
 
         data = {'text': 'Изменённый текст'}
 
         response = self.authorized_client.post(
-            reverse('posts:edit_comment', kwargs=self.comm_args),
+            reverse('posts:comment_edit', kwargs=self.comm_args),
             data=data,
         )
         post = Comment.objects.get(id=self.comment.id)
         self.assertRedirects(
-            response, reverse('posts:post', kwargs=self.pst_args))
+            response, reverse('posts:post', kwargs=self.post_args))
         self.assertEqual(Comment.objects.count(), comments_count)
         self.assertEqual(post.text, data['text'])

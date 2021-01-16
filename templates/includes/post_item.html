@@ -10,7 +10,7 @@
       <p class="card-text">
         <!-- Ссылка на автора через @ -->
         <a name="post_{{ post.id }}" href="{% url 'posts:profile' post.author.username %}">
-          <strong class="d-block text-gray-dark">@{{ post.author.get_full_name }}</strong>
+          <strong class="d-block text-gray-dark">@{{ post.author }}</strong>
         </a>
         {{ post.text|linebreaksbr }}
       </p>
@@ -34,10 +34,13 @@
             Добавить комментарий
           </a>
 
-          <!-- Ссылка на редактирование поста для автора -->
+          <!-- Ссылка на редактирование и удаление поста для автора -->
           {% if user == post.author %}
           <a class="btn btn-sm text-muted" href="{% url 'posts:post_edit' post.author.username post.id %}" role="button">
             Редактировать
+          </a>
+          <a class="btn btn-sm text-muted" href="{% url 'posts:post_del' post.author.username post.id %}" role="button">
+            Удалить
           </a>
           {% endif %}
         </div>

@@ -50,6 +50,11 @@ class PostModelTest(TestCase):
         """__str__.post - это строчка с содержимым post.text."""
         self.assertEquals(self.post.text[:15], str(self.post))
 
+    def test_delete_user_with_post(self):
+        posts_count = Post.objects.count()
+        self.user.delete()
+        self.assertNotEqual(posts_count, Post.objects.count())
+
 
 class GroupModelTest(TestCase):
     @classmethod
@@ -76,7 +81,7 @@ class CommentModelTest(TestCase):
         cls.comment = Comment.objects.create(
             text='Текст',
             author=cls.user,
-            post=cls.post
+            post=cls.post,
         )
 
     def test_verbose_name(self):
@@ -91,3 +96,8 @@ class CommentModelTest(TestCase):
             with self.subTest(value=value):
                 self.assertEqual(
                     self.comment._meta.get_field(value).verbose_name, expected)
+
+    def test_delete_post_with_comment(self):
+        comments_count = Comment.objects.count()
+        self.post.delete()
+        self.assertNotEqual(comments_count, Comment.objects.count())
