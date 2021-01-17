@@ -24,7 +24,7 @@ def follow_aux(request, username):
 
 
 def index(request):
-    post_list = Post.objects.select_related('group').all()
+    post_list = Post.objects.select_related('group')
     page, paginator = paginator_aux(request, post_list)
     context = {
         'page': page,
@@ -34,7 +34,10 @@ def index(request):
 
 
 def group_posts(request, slug):
-    group = get_object_or_404(Group, slug=slug)
+    group = get_object_or_404(
+        Group.objects.prefetch_related('posts'),
+        slug=slug,
+    )
     post_list = group.posts.all()
     page, paginator = paginator_aux(request, post_list)
     context = {
@@ -42,11 +45,14 @@ def group_posts(request, slug):
         'page': page,
         'paginator': paginator,
     }
-    return render(request, 'group.html', context)
+    return render(request, 'posts/group.html', context)
 
 
 def profile(request, username):
-    author = get_object_or_404(User, username=username)
+    author = get_object_or_404(
+        User.objects.prefetch_related('posts'),
+        username=username,
+    )
     post_list = author.posts.all()
     page, paginator = paginator_aux(request, post_list)
     context = {
@@ -154,8 +160,8 @@ def comment_edit(request, username, post_id, comment_id):
         id=post_id,
         author__username=username,
     )
-    comment = get_object_or_404(Comment, post=post, id=comment_id)
     comments = post.comments.all()
+    comment = get_object_or_404(comments, post=post, id=comment_id)
 
     if comment.author == request.user:
         form = CommentForm(

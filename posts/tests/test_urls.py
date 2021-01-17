@@ -57,6 +57,7 @@ class PostsURLTests(TestCase):
             'posts:profile': (self.profile_args, f'/{self.author.username}/'),
             'posts:post': (self.post_args, f'/{self.author.username}/{self.post.id}/'), # noqa
             'posts:post_edit': (self.post_args, f'/{self.author.username}/{self.post.id}/edit/'), # noqa
+            'posts:post_del': (self.post_args, f'/{self.author.username}/{self.post.id}/del/'), # noqa
             'posts:follow_index': (None, '/follow/'),
             'posts:profile_follow': (self.profile_args, f'/{self.author.username}/follow/'), # noqa
             'posts:profile_unfollow': (self.profile_args, f'/{self.author.username}/unfollow/'), # noqa
@@ -77,6 +78,7 @@ class PostsURLTests(TestCase):
             'posts:profile': (self.profile_args, 200),
             'posts:post': (self.post_args, 200),
             'posts:post_edit': (self.post_args, 302),
+            'posts:post_del': (self.post_args, 302),
             'posts:follow_index': (None, 302),
             'posts:profile_follow': (self.profile_args, 302),
             'posts:profile_unfollow': (self.profile_args, 302),

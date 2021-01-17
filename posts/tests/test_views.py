@@ -16,9 +16,13 @@ User = get_user_model()
 
 class PostsViewsTests(TestCase):
     @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
+
+    @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
         cls.author = User.objects.create(username='TestAuthor')
         cls.user = User.objects.create(username='TestUser')
@@ -86,7 +90,7 @@ class PostsViewsTests(TestCase):
         urls = {
             'posts:index': ('posts/index.html', None),
             'posts:new_post': ('posts/post_form.html', None),
-            'posts:group': ('group.html', self.group_args),
+            'posts:group': ('posts/group.html', self.group_args),
             'posts:profile': ('posts/profile.html', self.profile_args),
             'posts:post': ('posts/post.html', self.post_args),
             'posts:follow_index': ('posts/follow.html', None),
