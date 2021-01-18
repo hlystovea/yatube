@@ -2,32 +2,32 @@
     <div class="card">
             <div class="card-body">
                     <div class="h2">
-                        {{ username.get_full_name }}
+                        {{ author.get_full_name }}
                     </div>
                     <div class="h3 text-muted">
-                        @{{ username.username }}
+                        @{{ author.username }}
                     </div>
             </div>
             <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                             <div class="h6 text-muted">
-                                Подписчиков: {{ username.following.count }} <br>
-                                Подписан: {{ username.follower.count }}
+                                Подписчиков: {{ author.following.count }} <br>
+                                Подписан: {{ author.follower.count }}
                             </div>
                     </li>
                     <li class="list-group-item">
                             <div class="h6 text-muted">
-                                Записей: {{ username.posts.count }}
+                                Записей: {{ author.posts.count }}
                             </div>
                     </li>
-                    {% if user.is_authenticated and not user == username %}
+                    {% if user.is_authenticated and not user == author %}
                     <li class="list-group-item">
                         {% if is_follow %}
-                        <a class="btn btn-sm btn-light" href="{% url 'posts:profile_unfollow' username %}" role="button">
+                        <a class="btn btn-sm btn-light" href="{% url 'posts:profile_unfollow' author.username %}" role="button">
                             Отписаться 
                         </a> 
                         {% else %}
-                        <a class="btn btn-sm btn-primary"href="{% url 'posts:profile_follow' username %}" role="button">
+                        <a class="btn btn-sm btn-primary"href="{% url 'posts:profile_follow' author.username %}" role="button">
                             Подписаться 
                         </a>
                         {% endif %}

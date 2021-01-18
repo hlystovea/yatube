@@ -137,17 +137,17 @@ class PostsViewsTests(TestCase):
         """Авторизованный пользователь получает посты на странице index
         из кеша."""
         response1 = self.authorized_client.get(reverse('posts:index'))
-        post1 = response1.context['page'].object_list[0]
-        self.assertEqual(self.post.text, post1.text)
+        html1 = response1.content.decode()
+        post1 = Post.objects.filter(id=self.post.id)[0]
 
-        form_data = {'text': 'Другой текст'}
-        self.author_client.post(
-            reverse('posts:post_edit', kwargs=self.post_args),
-            data=form_data,
-        )
+        Post.objects.filter(id=self.post.id).update(text='Другой текст')
+
         response2 = self.authorized_client.get(reverse('posts:index'))
-        post2 = response2.context['page'].object_list[0]
-        self.assertNotEqual(self.post.text, post2.text)
+        html2 = response2.content.decode()
+        post2 = Post.objects.filter(id=self.post.id)[0]
+
+        self.assertNotEqual(post1.text, post2.text)
+        self.assertHTMLEqual(html1, html2)
 
     def test_profile_page_show_correct_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
@@ -168,7 +168,8 @@ class PostsViewsTests(TestCase):
     def test_post_page_show_correct_context(self):
         """Шаблон post сформирован с правильным контекстом."""
         response = self.client.get(
-            reverse('posts:post', kwargs=self.post_args))
+            reverse('posts:post', kwargs=self.post_args),
+        )
         context_fields = {
             'post': Post.objects.get(id=self.post.id),
             'author': self.author,
@@ -331,34 +332,29 @@ class FollowPageTest(TestCase):
         cls.user2 = User.objects.create(username='TestUser2')
         cls.user3 = User.objects.create(username='TestUser3')
 
-        cls.post1 = Post.objects.create(text='Пост 1', author=cls.user1)
-        cls.post2 = Post.objects.create(text='Пост 2', author=cls.user2)
-        cls.post3 = Post.objects.create(text='Пост 3', author=cls.user3)
-
-        cls.client1 = Client()
-        cls.client1.force_login(cls.user1)
-
-        cls.client2 = Client()
-        cls.client2.force_login(cls.user2)
-
-        cls.client3 = Client()
-        cls.client3.force_login(cls.user3)
-
-        Follow.objects.create(user=cls.user1, author=cls.user2)
+        Post.objects.create(text='Пост', author=cls.user3)
         Follow.objects.create(user=cls.user1, author=cls.user3)
-        Follow.objects.create(user=cls.user2, author=cls.user1)
+
+        cls.follower = Client()
+        cls.follower.force_login(cls.user1)
+
+        cls.not_follower = Client()
+        cls.not_follower.force_login(cls.user2)
+
+        cls.author = Client()
+        cls.author.force_login(cls.user3)
 
     def test_follow_page_show_relevant_posts(self):
         """Новая запись автора появляется в ленте тех, кто на него подписан."""
-        response1 = self.client1.get(reverse('posts:follow_index'))
-        response2 = self.client2.get(reverse('posts:follow_index'))
+        response1 = self.follower.get(reverse('posts:follow_index'))
+        response2 = self.not_follower.get(reverse('posts:follow_index'))
         posts_count1 = response1.context['paginator'].count
         posts_count2 = response2.context['paginator'].count
 
         Post.objects.create(text='Пост для теста', author=self.user3)
 
-        response3 = self.client1.get(reverse('posts:follow_index'))
-        response4 = self.client2.get(reverse('posts:follow_index'))
+        response3 = self.follower.get(reverse('posts:follow_index'))
+        response4 = self.not_follower.get(reverse('posts:follow_index'))
         posts_count3 = response3.context['paginator'].count
         posts_count4 = response4.context['paginator'].count
 
@@ -376,12 +372,15 @@ class PaginatorsTest(TestCase):
             slug='test-slug',
             description='Тестовое сообщество',
         )
+        posts = []
         for i in range(13):
-            Post.objects.create(
+            post = Post(
                 text=f'Тестовый пост необходимой длины {i}',
                 author=cls.author,
                 group=cls.group,
             )
+            posts.append(post)
+        Post.objects.bulk_create(posts)
 
         cls.group_args = {'slug': cls.group.slug}
         cls.profile_args = {'username': cls.author.username}
@@ -395,8 +394,8 @@ class PaginatorsTest(TestCase):
         }
         for url_name, value in urls.items():
             response = self.client.get(reverse(url_name, kwargs=value[0]))
-            self.assertEqual(
-                len(response.context['page'].object_list), value[1])
+            posts_page1_count = len(response.context['page'].object_list)
+            self.assertEqual(posts_page1_count, value[1])
 
     def test_index_second_page_containse_three_records(self):
         """Вторые страницы паджинаторов содержат правильное кол-во записей."""
@@ -408,5 +407,5 @@ class PaginatorsTest(TestCase):
         for url_name, value in urls.items():
             response = self.client.get(
                 reverse(url_name, kwargs=value[0]) + '?page=2')
-            self.assertEqual(
-                len(response.context['page'].object_list), value[1])
+            posts_page2_count = len(response.context['page'].object_list)
+            self.assertEqual(posts_page2_count, value[1])

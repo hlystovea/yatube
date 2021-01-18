@@ -1,34 +1,20 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from posts.forms import CommentForm, PostForm
 from posts.models import Comment, Follow, Group, Post
+from posts.utils import get_page, check_follow
 
 User = get_user_model()
 
 
-def paginator_aux(request, object_list, per_page=10):
-    paginator = Paginator(object_list, per_page)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
-    return page, paginator
-
-
-def follow_aux(request, username):
-    return Follow.objects.filter(
-        user__username=request.user,
-        author__username=username,
-    ).exists()
-
-
 def index(request):
-    post_list = Post.objects.select_related('group')
-    page, paginator = paginator_aux(request, post_list)
+    post_list = Post.objects.select_related('group', 'author')
+    page = get_page(request, post_list)
     context = {
         'page': page,
-        'paginator': paginator,
+        'paginator': page.paginator,
     }
     return render(request, 'posts/index.html', context)
 
@@ -38,12 +24,12 @@ def group_posts(request, slug):
         Group.objects.prefetch_related('posts'),
         slug=slug,
     )
-    post_list = group.posts.all()
-    page, paginator = paginator_aux(request, post_list)
+    post_list = group.posts.select_related('author')
+    page = get_page(request, post_list)
     context = {
         'group': group,
         'page': page,
-        'paginator': paginator,
+        'paginator': page.paginator,
     }
     return render(request, 'posts/group.html', context)
 
@@ -53,13 +39,13 @@ def profile(request, username):
         User.objects.prefetch_related('posts'),
         username=username,
     )
-    post_list = author.posts.all()
-    page, paginator = paginator_aux(request, post_list)
+    post_list = author.posts.select_related('group')
+    page = get_page(request, post_list)
     context = {
         'author': author,
         'page': page,
-        'paginator': paginator,
-        'is_follow': follow_aux(request, username),
+        'paginator': page.paginator,
+        'is_follow': check_follow(request.user, username),
     }
     return render(request, 'posts/profile.html', context)
 
@@ -68,18 +54,17 @@ def post_view(request, username, post_id):
     if request.POST:
         add_comment(request, username, post_id)
     post = get_object_or_404(
-        Post.objects.prefetch_related('comments'),
+        Post.objects.select_related('author'),
         id=post_id,
         author__username=username,
     )
-    comments = post.comments.all()
+    comments = post.comments.select_related('author')
     form = CommentForm()
     context = {
         'form': form,
         'post': post,
-        'author': post.author,
         'comments': comments,
-        'is_follow': follow_aux(request, username),
+        'is_follow': check_follow(request.user, username),
     }
     return render(request, 'posts/post.html', context)
 
@@ -100,8 +85,8 @@ def new_post(request):
 
 @login_required
 def post_edit(request, username, post_id):
-    if request.user.username == username:
-        post = get_object_or_404(Post, id=post_id, author__username=username)
+    post = get_object_or_404(Post, id=post_id, author__username=username)
+    if request.user == post.author:
         form = PostForm(
             request.POST or None,
             files=request.FILES or None,
@@ -121,9 +106,10 @@ def post_edit(request, username, post_id):
 
 @login_required
 def post_del(request, username, post_id):
-    if request.user.username == username:
+    if request.method == 'POST':
         post = get_object_or_404(Post, author__username=username, id=post_id)
-        post.delete()
+        if request.user == post.author:
+            post.delete()
     return redirect(
         request.META.get('HTTP_REFERER', 'posts:profile'),
         username=username,
@@ -133,11 +119,11 @@ def post_del(request, username, post_id):
 @login_required
 def add_comment(request, username, post_id):
     post = get_object_or_404(
-        Post.objects.prefetch_related('comments'),
+        Post.objects.select_related('author'),
         id=post_id,
         author__username=username,
     )
-    comments = post.comments.all()
+    comments = post.comments.select_related('author')
     form = CommentForm(request.POST or None)
     if form.is_valid():
         form.instance.author = request.user
@@ -147,8 +133,9 @@ def add_comment(request, username, post_id):
     context = {
         'form': form,
         'post': post,
+        'author': post.author,
         'comments': comments,
-        'is_follow': follow_aux(request, username),
+        'is_follow': check_follow(request.user, username),
     }
     return render(request, 'posts/post.html', context)
 
@@ -160,10 +147,10 @@ def comment_edit(request, username, post_id, comment_id):
         id=post_id,
         author__username=username,
     )
-    comments = post.comments.all()
+    comments = post.comments.select_related('author')
     comment = get_object_or_404(comments, post=post, id=comment_id)
 
-    if comment.author == request.user:
+    if request.user == comment.author:
         form = CommentForm(
             request.POST or None,
             instance=comment,
@@ -176,7 +163,7 @@ def comment_edit(request, username, post_id, comment_id):
             'post': post,
             'comment': comment,
             'comments': comments,
-            'is_follow': follow_aux(request, username),
+            'is_follow': check_follow(request.user, username),
         }
         return render(request, 'posts/post.html', context)
     return redirect('posts:post', username=username, post_id=post_id)
@@ -184,24 +171,25 @@ def comment_edit(request, username, post_id, comment_id):
 
 @login_required
 def comment_del(request, username, post_id, comment_id):
-    if request.user.username == username:
+    if request.method == 'POST':
         comment = get_object_or_404(
             Comment,
             author__username=username,
-            post__id=post_id,
+            post_id=post_id,
             id=comment_id,
         )
-        comment.delete()
+        if request.user == comment.author:
+            comment.delete()
     return redirect('posts:post', username=username, post_id=post_id)
 
 
 @login_required
 def follow_index(request):
     post_list = Post.objects.filter(author__following__user=request.user)
-    page, paginator = paginator_aux(request, post_list)
+    page = get_page(request, post_list)
     context = {
         'page': page,
-        'paginator': paginator,
+        'paginator': page.paginator,
     }
     return render(request, "posts/follow.html", context)
 

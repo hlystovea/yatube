@@ -39,9 +39,10 @@
           <a class="btn btn-sm text-muted" href="{% url 'posts:post_edit' post.author.username post.id %}" role="button">
             Редактировать
           </a>
-          <a class="btn btn-sm text-muted" href="{% url 'posts:post_del' post.author.username post.id %}" role="button">
-            Удалить
-          </a>
+          <form id="post_del" method="post" action="{% url 'posts:post_del' post.author.username post.id %}">
+            {% csrf_token %}
+            <input type="submit" class="btn btn-sm text-muted" form="post_del" value="Удалить">
+          </form>
           {% endif %}
         </div>
   

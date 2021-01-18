@@ -73,9 +73,11 @@ class PostFormTests(TestCase):
             data=form_data,
             follow=True,
         )
+        is_post_exist = Post.objects.filter(text=form_data['text']).exists()
+
         self.assertRedirects(response, reverse('posts:index'))
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        self.assertTrue(Post.objects.filter(text=form_data['text']).exists())
+        self.assertTrue(is_post_exist)
 
     def test_post_edit_form(self):
         """Валидная форма редактирует запись в Post."""

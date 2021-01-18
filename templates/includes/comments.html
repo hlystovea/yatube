@@ -3,7 +3,7 @@
 
 {% if user.is_authenticated and not comment %}
 <div class="card my-4">
-    <form method="post">
+    <form id="add_comment" method="post">
         {% csrf_token %}
         <h5 class="card-header">Добавить комментарий:</h5>
         <div class="card-body">
@@ -25,7 +25,7 @@
                <strong class="d-block text-gray-dark">{{ item.author.get_full_name }}</strong>
             </a>
             {% if item.id == comment.id %}
-            <form method="post">
+            <form id="comment_edit" method="post">
                 {% csrf_token %}
                 <div class="form-group">
                     <textarea name="text" cols=100% rows="4" maxlength="300" class="form-control" required="" autofocus="" id="id_text">{{ form.text.value }}</textarea>
@@ -42,9 +42,10 @@
                 <a class="btn btn-sm text-muted" href="{% url 'posts:comment_edit' item.author.username item.post.id item.id %}" role="button">
                   Редактировать
                 </a>
-                <a class="btn btn-sm text-muted" href="{% url 'posts:comment_del' item.post.author.username item.post.id item.id %}" role="button">
-                    Удалить
-                </a>
+                <form id="comment_del" method="post" action="{% url 'posts:comment_del' item.post.author.username item.post.id item.id %}">
+                    {% csrf_token %}
+                    <input type="submit" class="btn btn-sm text-muted" form="comment_del" value="Удалить">
+                </form>
               {% endif %}
             </div>
 
