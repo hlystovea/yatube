@@ -9,12 +9,17 @@
             <h1>
                 Последние обновления на сайте
             </h1>
-            <!-- actual timestamp {% now "H:i:s" %} --> 
+            <!-- actual timestamp {% now "H:i:s" %} -->
             {% for post in page %}
-                {% cache 20 post_item post.id request.user.username %}
-                <!-- cache timestamp {% now "H:i:s" %} --> 
+                {% if request.user.is_authenticated %}
+                {% cache 20 post_item post.id %}
+                <!-- cache timestamp {% now "H:i:s" %} -->
                     {% include "includes/post_item.html" with post=post %}
                 {% endcache %}
+                {% else %}
+                <!-- item timestamp {% now "H:i:s" %} -->
+                    {% include "includes/post_item.html" with post=post %}
+                {% endif %}
             {% endfor %}
         </div>
         {% if page.has_other_pages %}
