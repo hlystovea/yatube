@@ -1,7 +1,7 @@
 <!-- Форма добавления комментария -->
 {% load user_filters %}
 
-{% if user.is_authenticated and not comment %}
+{% if form and not comment_id %}
 <div class="card my-4">
     <form id="add_comment" method="post">
         {% csrf_token %}
@@ -39,10 +39,10 @@
             <div class="btn-group">
               <!-- Ссылка на редактирование, показывается только автору комментария-->
               {% if user == item.author %}
-                <a class="btn btn-sm text-muted" href="{% url 'posts:comment_edit' item.author.username item.post.id item.id %}" role="button">
+                <a class="btn btn-sm text-muted" href="{% url 'posts:comment_edit' post.author.username item.post_id item.id %}" role="button">
                   Редактировать
                 </a>
-                <form id="comment_del" method="post" action="{% url 'posts:comment_del' item.post.author.username item.post.id item.id %}">
+                <form id="comment_del" method="post" action="{% url 'posts:comment_del' post.author.username item.post_id item.id %}">
                     {% csrf_token %}
                     <input type="submit" class="btn btn-sm text-muted" form="comment_del" value="Удалить">
                 </form>
