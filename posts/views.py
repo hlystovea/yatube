@@ -52,17 +52,13 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    if request.POST:
-        add_comment(request, username, post_id)
     post = get_object_or_404(
         Post.objects.select_related('author', 'group'),
         id=post_id,
         author__username=username,
     )
     comments = post.comments.select_related('author')
-    form = CommentForm()
     context = {
-        'form': form,
         'post': post,
         'comments': comments,
         'is_follow': is_follow(request.user, username),
@@ -183,7 +179,6 @@ def comment_edit(request, username, post_id, comment_id):
 def comment_del(request, username, post_id, comment_id):
     comment = get_object_or_404(
         Comment.objects.select_related('author'),
-        author__username=username,
         post_id=post_id,
         id=comment_id,
     )
