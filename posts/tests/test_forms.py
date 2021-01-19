@@ -92,7 +92,8 @@ class PostFormTests(TestCase):
         )
         post = Post.objects.get(id=self.post.id)
         self.assertRedirects(
-            response, reverse('posts:post', kwargs=self.post_args))
+            response, reverse('posts:post', kwargs=self.post_args),
+        )
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.group.id, form_data['group'])
@@ -137,7 +138,8 @@ class CommentFormTests(TestCase):
             follow=True,
         )
         self.assertRedirects(
-            response, reverse('posts:post', kwargs=self.post_args))
+            response, reverse('posts:post', kwargs=self.post_args),
+        )
         self.assertEqual(Comment.objects.count(), comments_count + 1)
         self.assertTrue(Comment.objects.filter(text=data['text']).exists())
 
@@ -153,6 +155,7 @@ class CommentFormTests(TestCase):
         )
         post = Comment.objects.get(id=self.comment.id)
         self.assertRedirects(
-            response, reverse('posts:post', kwargs=self.post_args))
+            response, reverse('posts:post', kwargs=self.post_args),
+        )
         self.assertEqual(Comment.objects.count(), comments_count)
         self.assertEqual(post.text, data['text'])

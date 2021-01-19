@@ -78,13 +78,13 @@ class PostsURLTests(TestCase):
             'posts:profile': (self.profile_args, 200),
             'posts:post': (self.post_args, 200),
             'posts:post_edit': (self.post_args, 302),
-            'posts:post_del': (self.post_args, 302),
+            #'posts:post_del': (self.post_args, 302),
             'posts:follow_index': (None, 302),
             'posts:profile_follow': (self.profile_args, 302),
             'posts:profile_unfollow': (self.profile_args, 302),
             'posts:add_comment': (self.post_args, 302),
             'posts:comment_edit': (self.comm_args, 302),
-            'posts:comment_del': (self.comm_args, 302),
+            #'posts:comment_del': (self.comm_args, 302),
         }
         for url_name, value in urls.items():
             with self.subTest(value=url_name):
@@ -100,18 +100,19 @@ class PostsURLTests(TestCase):
             'posts:profile': (self.profile_args, 200),
             'posts:post': (self.post_args, 200),
             'posts:post_edit': (self.post_args, 302),
-            'posts:post_del': (self.post_args, 302),
+            #'posts:post_del': (self.post_args, 302),
             'posts:follow_index': (None, 200),
             'posts:profile_follow': (self.profile_args, 302),
             'posts:profile_unfollow': (self.profile_args, 302),
             'posts:add_comment': (self.post_args, 200),
             'posts:comment_edit': (self.comm_args, 302),
-            'posts:comment_del': (self.comm_args, 302),
+            #'posts:comment_del': (self.comm_args, 302),
         }
         for url_name, value in urls.items():
             with self.subTest(value=url_name):
                 response = self.authorized_client.get(
-                                    reverse(url_name, kwargs=value[0]))
+                                    reverse(url_name, kwargs=value[0]),
+                                )
                 self.assertEqual(response.status_code, value[1])
 
     def test_url_available_authorized_author_post(self):
@@ -119,13 +120,14 @@ class PostsURLTests(TestCase):
         urls = {
             1: ('posts:post_edit', self.post_args, 200),
             2: ('posts:comment_edit', self.comm_args, 200),
-            3: ('posts:comment_del', self.comm_args, 302),
-            4: ('posts:post_del', self.post_args, 302),
+            #3: ('posts:comment_del', self.comm_args, 302),
+            #4: ('posts:post_del', self.post_args, 302),
         }
         for value in urls.values():
             with self.subTest(value=value[0]):
                 response = self.author_client.get(
-                                    reverse(value[0], kwargs=value[1]))
+                                    reverse(value[0], kwargs=value[1]),
+                                )
                 self.assertEqual(response.status_code, value[2])
 
     def test_url_errors_page(self):

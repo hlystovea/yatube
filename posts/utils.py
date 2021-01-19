@@ -10,7 +10,7 @@ def get_page(request, object_list, per_page=10):
     return page
 
 
-def check_follow(user, author_username):
+def is_follow(user, author_username):
     return Follow.objects.filter(
         user__username=user,
         author__username=author_username,

@@ -154,7 +154,8 @@ class PostsViewsTests(TestCase):
         posts = self.author.posts.all()
         paginator = Paginator(posts, 10)
         response = self.client.get(
-            reverse('posts:profile', kwargs=self.profile_args))
+            reverse('posts:profile', kwargs=self.profile_args),
+        )
         context_fields = {
             response.context['page'].object_list[0]: posts[0],
             response.context['author']: self.author,
@@ -196,7 +197,8 @@ class PostsViewsTests(TestCase):
     def test_post_edit_page_show_correct_context(self):
         """Шаблон post_edit сформирован с правильным контекстом."""
         response = self.author_client.get(
-            reverse('posts:post_edit', kwargs=self.post_args))
+            reverse('posts:post_edit', kwargs=self.post_args),
+        )
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
@@ -212,7 +214,8 @@ class PostsViewsTests(TestCase):
     def test_add_comment_page_show_correct_context(self):
         """Шаблон add_comment сформирован с правильным контекстом."""
         response = self.author_client.get(
-            reverse('posts:add_comment', kwargs=self.post_args))
+            reverse('posts:add_comment', kwargs=self.post_args),
+        )
         form_field = response.context['form'].fields['text']
         comments_count = response.context['comments'].count()
         context_fields = {
@@ -228,7 +231,8 @@ class PostsViewsTests(TestCase):
     def test_comment_edit_page_show_correct_context(self):
         """Шаблон comment_edit сформирован с правильным контекстом."""
         response = self.author_client.get(
-            reverse('posts:comment_edit', kwargs=self.comm_args))
+            reverse('posts:comment_edit', kwargs=self.comm_args),
+        )
         form_field = response.context['form'].fields['text']
         comments_count = response.context['comments'].count()
         context_fields = {
@@ -249,7 +253,8 @@ class PostsViewsTests(TestCase):
                 posts = group.posts.all()
                 paginator = Paginator(posts, 10)
                 response = self.client.get(
-                    reverse('posts:group', kwargs={'slug': group.slug}))
+                    reverse('posts:group', kwargs={'slug': group.slug}),
+                )
                 actual_post = response.context['page'].object_list[0]
                 actual_group = response.context['group']
                 actual_count = response.context['paginator'].count
@@ -276,7 +281,8 @@ class PostsViewsTests(TestCase):
     def test_authorized_user_unfollow_author(self):
         """Авторизованный пользователь может отписываться от других авторов."""
         self.authorized_client.get(
-            reverse('posts:profile_follow', kwargs=self.profile_args))
+            reverse('posts:profile_follow', kwargs=self.profile_args),
+        )
         url = reverse('posts:profile_unfollow', kwargs=self.profile_args)
         users = {
             1: (self.client, 1),

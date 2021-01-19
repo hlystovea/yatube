@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from posts.forms import CommentForm, PostForm
 from posts.models import Comment, Follow, Group, Post
-from posts.utils import get_page, check_follow
+from posts.utils import get_page, is_follow
 
 User = get_user_model()
 
@@ -39,13 +40,13 @@ def profile(request, username):
         User.objects.prefetch_related('posts'),
         username=username,
     )
-    post_list = author.posts.select_related('group')
+    post_list = author.posts.prefetch_related('comments')
     page = get_page(request, post_list)
     context = {
         'author': author,
         'page': page,
         'paginator': page.paginator,
-        'is_follow': check_follow(request.user, username),
+        'is_follow': is_follow(request.user, username),
     }
     return render(request, 'posts/profile.html', context)
 
@@ -54,7 +55,7 @@ def post_view(request, username, post_id):
     if request.POST:
         add_comment(request, username, post_id)
     post = get_object_or_404(
-        Post.objects.select_related('author'),
+        Post.objects.select_related('author', 'group'),
         id=post_id,
         author__username=username,
     )
@@ -64,7 +65,7 @@ def post_view(request, username, post_id):
         'form': form,
         'post': post,
         'comments': comments,
-        'is_follow': check_follow(request.user, username),
+        'is_follow': is_follow(request.user, username),
     }
     return render(request, 'posts/post.html', context)
 
@@ -85,7 +86,11 @@ def new_post(request):
 
 @login_required
 def post_edit(request, username, post_id):
-    post = get_object_or_404(Post, id=post_id, author__username=username)
+    post = get_object_or_404(
+        Post.objects.select_related('author'),
+        id=post_id,
+        author__username=username,
+    )
     if request.user == post.author:
         form = PostForm(
             request.POST or None,
@@ -104,12 +109,16 @@ def post_edit(request, username, post_id):
     return redirect('posts:post', username=username, post_id=post_id)
 
 
+@require_POST
 @login_required
 def post_del(request, username, post_id):
-    if request.method == 'POST':
-        post = get_object_or_404(Post, author__username=username, id=post_id)
-        if request.user == post.author:
-            post.delete()
+    post = get_object_or_404(
+        Post.objects.select_related('author'),
+        author__username=username,
+        id=post_id,
+    )
+    if request.user == post.author:
+        post.delete()
     return redirect(
         request.META.get('HTTP_REFERER', 'posts:profile'),
         username=username,
@@ -119,7 +128,7 @@ def post_del(request, username, post_id):
 @login_required
 def add_comment(request, username, post_id):
     post = get_object_or_404(
-        Post.objects.select_related('author'),
+        Post.objects.select_related('author', 'group'),
         id=post_id,
         author__username=username,
     )
@@ -135,7 +144,7 @@ def add_comment(request, username, post_id):
         'post': post,
         'author': post.author,
         'comments': comments,
-        'is_follow': check_follow(request.user, username),
+        'is_follow': is_follow(request.user, username),
     }
     return render(request, 'posts/post.html', context)
 
@@ -143,7 +152,7 @@ def add_comment(request, username, post_id):
 @login_required
 def comment_edit(request, username, post_id, comment_id):
     post = get_object_or_404(
-        Post.objects.select_related('author'),
+        Post.objects.select_related('author', 'group'),
         id=post_id,
         author__username=username,
     )
@@ -161,31 +170,32 @@ def comment_edit(request, username, post_id, comment_id):
         context = {
             'form': form,
             'post': post,
-            'comment': comment,
+            'comment_id': comment_id,
             'comments': comments,
-            'is_follow': check_follow(request.user, username),
+            'is_follow': is_follow(request.user, username),
         }
         return render(request, 'posts/post.html', context)
     return redirect('posts:post', username=username, post_id=post_id)
 
 
+@require_POST
 @login_required
 def comment_del(request, username, post_id, comment_id):
-    if request.method == 'POST':
-        comment = get_object_or_404(
-            Comment,
-            author__username=username,
-            post_id=post_id,
-            id=comment_id,
-        )
-        if request.user == comment.author:
-            comment.delete()
+    comment = get_object_or_404(
+        Comment.objects.select_related('author'),
+        author__username=username,
+        post_id=post_id,
+        id=comment_id,
+    )
+    if request.user == comment.author:
+        comment.delete()
     return redirect('posts:post', username=username, post_id=post_id)
 
 
 @login_required
 def follow_index(request):
-    post_list = Post.objects.filter(author__following__user=request.user)
+    post_list = Post.objects.filter(
+        author__following__user=request.user).select_related('author', 'group')
     page = get_page(request, post_list)
     context = {
         'page': page,
