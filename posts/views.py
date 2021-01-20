@@ -16,6 +16,7 @@ def index(request):
     context = {
         'page': page,
         'paginator': page.paginator,
+        'index': True,
     }
     return render(request, 'posts/index.html', context)
 
@@ -195,6 +196,7 @@ def follow_index(request):
     context = {
         'page': page,
         'paginator': page.paginator,
+        'follow': True,
     }
     return render(request, "posts/follow.html", context)
 
