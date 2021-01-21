@@ -78,13 +78,13 @@ class PostsURLTests(TestCase):
             'posts:profile': (self.profile_args, 200),
             'posts:post': (self.post_args, 200),
             'posts:post_edit': (self.post_args, 302),
-            #'posts:post_del': (self.post_args, 302),
+            'posts:post_del': (self.post_args, 405),
             'posts:follow_index': (None, 302),
             'posts:profile_follow': (self.profile_args, 302),
             'posts:profile_unfollow': (self.profile_args, 302),
             'posts:add_comment': (self.post_args, 302),
             'posts:comment_edit': (self.comm_args, 302),
-            #'posts:comment_del': (self.comm_args, 302),
+            'posts:comment_del': (self.comm_args, 405),
         }
         for url_name, value in urls.items():
             with self.subTest(value=url_name):
@@ -100,13 +100,13 @@ class PostsURLTests(TestCase):
             'posts:profile': (self.profile_args, 200),
             'posts:post': (self.post_args, 200),
             'posts:post_edit': (self.post_args, 302),
-            #'posts:post_del': (self.post_args, 302),
+            'posts:post_del': (self.post_args, 405),
             'posts:follow_index': (None, 200),
             'posts:profile_follow': (self.profile_args, 302),
             'posts:profile_unfollow': (self.profile_args, 302),
             'posts:add_comment': (self.post_args, 200),
             'posts:comment_edit': (self.comm_args, 302),
-            #'posts:comment_del': (self.comm_args, 302),
+            'posts:comment_del': (self.comm_args, 405),
         }
         for url_name, value in urls.items():
             with self.subTest(value=url_name):
@@ -120,12 +120,25 @@ class PostsURLTests(TestCase):
         urls = {
             1: ('posts:post_edit', self.post_args, 200),
             2: ('posts:comment_edit', self.comm_args, 200),
-            #3: ('posts:comment_del', self.comm_args, 302),
-            #4: ('posts:post_del', self.post_args, 302),
+            3: ('posts:comment_del', self.comm_args, 405),
+            4: ('posts:post_del', self.post_args, 405),
         }
         for value in urls.values():
             with self.subTest(value=value[0]):
                 response = self.author_client.get(
+                                    reverse(value[0], kwargs=value[1]),
+                                )
+                self.assertEqual(response.status_code, value[2])
+
+    def test_comment_del_post_del_urls_available(self):
+        """Cтраницы удаления поста и комментария доступны при POST запросе."""
+        urls = {
+            1: ('posts:comment_del', self.comm_args, 302),
+            2: ('posts:post_del', self.post_args, 302),
+        }
+        for value in urls.values():
+            with self.subTest(value=value[0]):
+                response = self.client.post(
                                     reverse(value[0], kwargs=value[1]),
                                 )
                 self.assertEqual(response.status_code, value[2])

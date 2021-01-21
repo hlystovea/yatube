@@ -237,7 +237,7 @@ class PostsViewsTests(TestCase):
         comments_count = response.context['comments'].count()
         context_fields = {
             'post': Post.objects.get(id=self.post.id),
-            'comment': self.comment,
+            'comment_id': self.comment.id,
             'is_follow': False,
         }
         for value, expected in context_fields.items():
