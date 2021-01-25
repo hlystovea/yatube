@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Записи сообщества {{ group.title }}{% endblock %}
 {% block content %}
-{% load thumbnail %}
 
     <main role="main" class="container">
         <div class="row">
@@ -47,7 +46,7 @@
     
                     <!-- Здесь постраничная навигация паджинатора -->
                     {% include "includes/paginator.html" %}
-         </div>
+                </div>
         </div>
     </main>
 
