@@ -4,20 +4,17 @@
 {% block content %}
     <br>
     <div class="container-lg">
-        <!-- actual timestamp {% now "H:i:s" %} -->
         {% for post in page %}
             {% if request.user.is_authenticated %}
                 {% cache 20 post_item post.id request.user.username %}
-                    <!-- cache timestamp {% now "H:i:s" %} -->
                     {% include "includes/post_item.html" with post=post %}
                 {% endcache %}
             {% else %}
-                <!-- item timestamp {% now "H:i:s" %} -->
                 {% include "includes/post_item.html" with post=post %}
             {% endif %}
         {% endfor %}
+        {% if page.has_other_pages %}
+            {% include "includes/paginator.html" with items=page paginator=paginator%}
+        {% endif %}
     </div>
-    {% if page.has_other_pages %}
-        {% include "includes/paginator.html" with items=page paginator=paginator%}
-    {% endif %}
 {% endblock %}
