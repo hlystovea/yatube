@@ -9,7 +9,7 @@ from django.views.static import serve as media_serve
 urlpatterns = [
     path('auth/', include('users.urls')),
     path('auth/', include('django.contrib.auth.urls')),
-    path('admin/', admin.site.urls),
+    path('@admin/', admin.site.urls),
     path('', include('posts.urls', namespace='posts')),
     path('about/', include('about.urls', namespace='about')),
 ]
