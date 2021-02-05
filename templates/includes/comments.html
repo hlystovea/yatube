@@ -22,7 +22,7 @@
     <div class="card-body">
         <p class="card-text">
             <a href="{% url 'posts:profile' item.author.username %}" name="comment_{{ item.id }}">
-               <strong class="d-block text-gray-dark">{{ item.author.get_full_name }}</strong>
+               <strong class="d-block text-gray-dark">@{{ item.author }}</strong>
             </a>
             {% if item.id == comment_id %}
             <form id="comment_edit" method="post">
