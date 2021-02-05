@@ -1,7 +1,10 @@
-<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+<nav class="navbar navbar-expand-md fixed-top bg-dark navbar-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="{% url 'posts:index' %}"><span style="color:#39d8d0;">Йа</span>Труба</a>
-      <div class="collapse navbar-collapse">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+      <div class="collapse navbar-collapse" id='navbarCollapse'>
       <ul class="navbar-nav me-auto">
         <li class="nav-item {% if index %}active{% endif %}"><a class="nav-link" href="{% url 'posts:index' %}">Все авторы</a></li>
         <li class="nav-item {% if follow %}active{% endif %}"><a class="nav-link" href="{% url 'posts:follow_index' %}">Подписки</a></li>
