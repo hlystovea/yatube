@@ -1,11 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 from posts.forms import CommentForm, PostForm
 from posts.models import Comment, Follow, Group, Post
 from posts.utils import get_page, is_follow
+from posts.serializers import PostSerializer
 
 User = get_user_model()
 
@@ -221,6 +225,20 @@ def profile_unfollow(request, username):
         request.META.get('HTTP_REFERER', 'posts:profile'),
         username=username,
     )
+
+
+@api_view(['GET', 'POST']) 
+def api_posts(request):
+    if request.method == 'GET':
+        posts = get_list_or_404(Post.objects.all())
+        serializer = PostSerializer(posts, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 def page_not_found(request, exception):
