@@ -17,7 +17,7 @@
 1. Склонируйте проект:
 
 
-```git clone https://github.com/hlystovea/resource_planner.git```  
+```git clone https://github.com/hlystovea/hw05_final.git```  
 
 
 2. Создайте файл .env по примеру env.example.
