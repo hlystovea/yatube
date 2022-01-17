@@ -1,10 +1,15 @@
 import os
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import environ
 
-SECRET_KEY = '4z7i%euk2&agm*9!1^qy4@s_jmbl$mm-7(@ptdz51u0le)jufv'
+env = environ.Env(DEBUG=(bool, False))
 
-DEBUG = False
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = env('SECRET_KEY')
+
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = [
     '*',
